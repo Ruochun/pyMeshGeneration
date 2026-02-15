@@ -42,7 +42,7 @@ tg = tetgen.TetGen(points, faces)
 #   pq1.2 -> quality mesh
 #   a0.05 -> max tetra volume
 #   A     -> assign region attributes
-mesh_res = tg.tetrahedralize(order=1, mindihedral=20, minratio=1.5)
+mesh_res = tg.tetrahedralize(order=2, mindihedral=20, minratio=1.5)
 # print(f"mesh_res is {mesh_res}")
 
 # nodes, elements
@@ -55,7 +55,7 @@ elements = mesh_res[1]
 
 # VTK expects special cell format
 cells = np.hstack([
-    np.full((elements.shape[0], 1), 4),
+    np.full((elements.shape[0], 1), elements.shape[1]),
     elements
 ]).astype(np.int64)
 
