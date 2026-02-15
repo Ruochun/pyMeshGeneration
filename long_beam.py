@@ -54,6 +54,24 @@ elements = mesh_res[1]
 # 3. Convert to PyVista grid
 # ----------------------------------------
 
+# For quadratic elements (order=2), reorder mid-edge nodes to match VTK convention
+# TetGen and VTK use different node ordering for tet10 elements (type 24)
+# TetGen edge ordering: (0,1), (1,2), (2,0), (3,0), (3,1), (3,2)
+# VTK edge ordering:    (0,1), (1,2), (2,0), (0,3), (1,3), (2,3)
+# Remapping: keep corners [0,1,2,3], reorder mid-edges from [4,5,6,7,8,9] to [6,7,9,5,8,4]
+# which means taking nodes at element positions [0,1,2,3,6,7,9,5,8,4]
+if elem_order == 2:
+    # Reorder from TetGen to VTK convention for tet10
+    reordered_elements = np.empty_like(elements)
+    reordered_elements[:, 0:4] = elements[:, 0:4]  # Keep corner nodes
+    reordered_elements[:, 4] = elements[:, 6]  # VTK edge (0,1) <- TetGen position 6
+    reordered_elements[:, 5] = elements[:, 7]  # VTK edge (1,2) <- TetGen position 7
+    reordered_elements[:, 6] = elements[:, 9]  # VTK edge (2,0) <- TetGen position 9
+    reordered_elements[:, 7] = elements[:, 5]  # VTK edge (0,3) <- TetGen position 5
+    reordered_elements[:, 8] = elements[:, 8]  # VTK edge (1,3) <- TetGen position 8
+    reordered_elements[:, 9] = elements[:, 4]  # VTK edge (2,3) <- TetGen position 4
+    elements = reordered_elements
+
 # VTK expects special cell format
 cells = np.hstack([
     np.full((elements.shape[0], 1), elements.shape[1]),
