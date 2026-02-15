@@ -42,7 +42,12 @@ tg = tetgen.TetGen(points, faces)
 #   pq1.2 -> quality mesh
 #   a0.05 -> max tetra volume
 #   A     -> assign region attributes
-nodes, elements = tg.tetrahedralize(order=1, mindihedral=20, minratio=1.5)
+mesh_res = tg.tetrahedralize(order=1, mindihedral=20, minratio=1.5)
+# print(f"mesh_res is {mesh_res}")
+
+# nodes, elements
+nodes = mesh_res[0]
+elements = mesh_res[1]
 
 # ----------------------------------------
 # 3. Convert to PyVista grid
