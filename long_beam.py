@@ -58,8 +58,8 @@ elements = mesh_res[1]
 # TetGen and VTK use different node ordering for tet10 elements (type 24)
 # TetGen edge ordering: (0,1), (1,2), (2,0), (3,0), (3,1), (3,2)
 # VTK edge ordering:    (0,1), (1,2), (2,0), (0,3), (1,3), (2,3)
-# Remapping: keep corners [0,1,2,3], reorder mid-edges from [4,5,6,7,8,9] to [4,5,6,7,8,9]
-# which means taking nodes at positions [0,1,2,3,6,7,9,5,8,4]
+# Remapping: keep corners [0,1,2,3], reorder mid-edges from [4,5,6,7,8,9] to [6,7,9,5,8,4]
+# which means taking nodes at element positions [0,1,2,3,6,7,9,5,8,4]
 if elem_order == 2:
     # Reorder from TetGen to VTK convention for tet10
     reordered_elements = np.empty_like(elements)
