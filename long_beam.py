@@ -42,7 +42,8 @@ tg = tetgen.TetGen(points, faces)
 #   pq1.2 -> quality mesh
 #   a0.05 -> max tetra volume
 #   A     -> assign region attributes
-mesh_res = tg.tetrahedralize(order=2, mindihedral=20, minratio=1.5)
+elem_order = 2  # 1 for linear, 2 for quadratic
+mesh_res = tg.tetrahedralize(order=elem_order, mindihedral=20, minratio=1.5)
 # print(f"mesh_res is {mesh_res}")
 
 # nodes, elements
@@ -59,8 +60,9 @@ cells = np.hstack([
     elements
 ]).astype(np.int64)
 
+elem_type = 10 if elem_order == 1 else 24  # VTK_TETRA or VTK_QUADRATIC_TETRA
 grid = pv.UnstructuredGrid(cells, 
-                           np.full(elements.shape[0], 10),  # 10 = VTK_TETRA
+                           np.full(elements.shape[0], elem_type),
                            nodes)
 
 # ----------------------------------------
