@@ -67,6 +67,6 @@ grid = pv.UnstructuredGrid(cells,
 # 4. Save to VTU
 # ----------------------------------------
 
-grid.save("beam.vtu")
+grid.save("beam.vtu", binary=False)
 
 print("Saved beam.vtu")
