@@ -30,6 +30,27 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Example: Near-Convex Decomposition of the Stanford Bunny
+
+The `bunny_convex_decomposition.py` script loads `meshes/bunny.obj`, splits the
+mesh into near-convex regions with **CoACD**, assigns each region a distinct
+colour, and renders the result in an interactive 3-D window:
+
+```python
+python bunny_convex_decomposition.py
+```
+
+This script:
+1. Loads `meshes/bunny.obj` with *trimesh*
+2. Runs CoACD near-convex decomposition (default concavity threshold `0.2`)
+3. Assigns each part a visually distinct colour from a matplotlib colourmap
+4. Displays the coloured decomposition in a PyVista interactive window
+
+Tuneable parameters at the top of the script:
+- `THRESHOLD` – CoACD concavity threshold (0, 1); lower → more parts, higher →
+  fewer parts (default `0.2`)
+- `MAX_HULLS` – upper bound on the number of convex parts (-1 = unlimited)
+
 ### Example: Generate a Beam Mesh
 
 The `long_beam.py` script demonstrates how to create a tetrahedral mesh of a rectangular beam:
@@ -55,6 +76,9 @@ You can modify the beam dimensions and mesh parameters in the script:
 - numpy 1.x
 - tetgen
 - pyvista
+- trimesh
+- coacd
+- matplotlib
 
 See `requirements.txt` for specific version constraints.
 
