@@ -209,3 +209,6 @@ __marimo__/
 # Meshes
 *.vtu
 *.VTU
+
+# Generated screenshots
+region_split.png
