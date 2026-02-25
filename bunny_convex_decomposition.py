@@ -3,14 +3,14 @@ Near-Convex Decomposition of the Stanford Bunny
 ================================================
 
 This script loads the Stanford bunny mesh, splits it into near-convex regions
-using CoACD (Approximate Convex Decomposition), then colors and displays each
-region with a distinct color using PyVista.
+using CoACD (Approximate Convex Decomposition), then colors and saves each
+region with a distinct color to a PNG file using PyVista.
 
 Prerequisites
 -------------
 Install the required packages::
 
-    pip install trimesh coacd pyvista
+    pip install trimesh coacd pyvista matplotlib
 
 Usage
 -----
@@ -18,19 +18,22 @@ Run from the repository root::
 
     python bunny_convex_decomposition.py
 
-The script will open an interactive 3D window showing the bunny decomposed into
-near-convex parts, each rendered in a different color.  Close the window to exit.
+The script will save ``bunny_decomposition.png`` in the current directory,
+showing the bunny decomposed into near-convex parts with distinct colors.
 
 CoACD Parameters (tuneable at top of script)
 --------------------------------------------
-- ``threshold``:  Concavity threshold in (0, 1).  Smaller values produce more
+- ``THRESHOLD``:   Concavity threshold in (0, 1).  Smaller values produce more
   (and smaller) parts; larger values allow more concavity per part.
-  Default ``0.2`` gives a reasonable ~5–15 parts for the bunny.
-- ``max_convex_hull``: Upper bound on the number of convex hulls produced
+  Default ``0.2`` gives a reasonable ~5–30 parts for the bunny.
+- ``RESOLUTION``:  Voxelization resolution used internally by CoACD.  Higher
+  values give a more accurate decomposition at the cost of longer compute time.
+  Default ``2000`` (CoACD's built-in default).
+- ``MAX_HULLS``:   Upper bound on the number of convex hulls produced
   (-1 means unlimited).
+- ``OUTPUT_PNG``:  Path of the output PNG file.
 """
 
-import sys
 import numpy as np
 import trimesh
 import coacd
@@ -38,9 +41,11 @@ import pyvista as pv
 import matplotlib.pyplot as plt
 
 # ── tuneable parameters ──────────────────────────────────────────────────────
-MESH_PATH = "meshes/bunny.obj"
-THRESHOLD = 0.2    # CoACD concavity threshold (0 < threshold < 1)
-MAX_HULLS = -1     # max number of convex parts (-1 = unlimited)
+MESH_PATH  = "meshes/bunny.obj"
+THRESHOLD  = 0.2     # CoACD concavity threshold (0 < threshold < 1)
+RESOLUTION = 2000    # CoACD voxelization resolution (higher = more accurate)
+MAX_HULLS  = -1      # max number of convex parts (-1 = unlimited)
+OUTPUT_PNG = "bunny_decomposition.png"
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -53,12 +58,13 @@ def load_mesh(path: str) -> trimesh.Trimesh:
     return mesh
 
 
-def decompose(mesh: trimesh.Trimesh, threshold: float, max_hulls: int):
+def decompose(mesh: trimesh.Trimesh, threshold: float, resolution: int, max_hulls: int):
     """Run CoACD near-convex decomposition and return a list of trimesh parts."""
     coacd_mesh = coacd.Mesh(mesh.vertices, mesh.faces)
     parts = coacd.run_coacd(
         coacd_mesh,
         threshold=threshold,
+        resolution=resolution,
         max_convex_hull=max_hulls,
     )
     print(f"Decomposed into {len(parts)} near-convex parts")
@@ -91,11 +97,12 @@ def main():
     mesh = load_mesh(MESH_PATH)
 
     # 2. Near-convex decomposition
-    parts = decompose(mesh, threshold=THRESHOLD, max_hulls=MAX_HULLS)
+    parts = decompose(mesh, threshold=THRESHOLD, resolution=RESOLUTION, max_hulls=MAX_HULLS)
 
-    # 3. Build coloured PyVista actors
+    # 3. Build coloured PyVista actors and save to PNG (off-screen)
     colours = assign_colors(len(parts))
-    plotter = pv.Plotter(window_size=(900, 700))
+    pv.start_xvfb()
+    plotter = pv.Plotter(off_screen=True, window_size=(900, 700))
     plotter.set_background("white")
 
     for part, colour in zip(parts, colours):
@@ -110,12 +117,15 @@ def main():
         )
 
     plotter.add_title(
-        f"Stanford Bunny – {len(parts)} near-convex parts (CoACD, threshold={THRESHOLD})",
+        f"Stanford Bunny – {len(parts)} near-convex parts "
+        f"(CoACD, threshold={THRESHOLD}, resolution={RESOLUTION})",
         font_size=10,
         color="black",
     )
     plotter.camera_position = "xy"
-    plotter.show()
+    plotter.screenshot(OUTPUT_PNG)
+    plotter.close()
+    print(f"Saved {OUTPUT_PNG}")
 
 
 if __name__ == "__main__":
