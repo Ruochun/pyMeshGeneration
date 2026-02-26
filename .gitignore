@@ -211,4 +211,5 @@ __marimo__/
 *.VTU
 
 # Generated output images
-bunny_decomposition.png
+decomposition.png
+

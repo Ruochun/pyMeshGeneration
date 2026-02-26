@@ -4,13 +4,14 @@ Near-Convex Decomposition of the Stanford Bunny
 
 This script loads the Stanford bunny mesh, splits it into near-convex regions
 using CoACD (Approximate Convex Decomposition), then colors and saves each
-region with a distinct color to a PNG file using PyVista.
+region with a distinct color to a PNG file using matplotlib (no display
+server required).
 
 Prerequisites
 -------------
 Install the required packages::
 
-    pip install trimesh coacd pyvista matplotlib
+    pip install trimesh coacd matplotlib
 
 Usage
 -----
@@ -18,7 +19,7 @@ Run from the repository root::
 
     python convex_decomposition.py
 
-The script will save ``bunny_decomposition.png`` in the current directory,
+The script will save ``decomposition.png`` in the current directory,
 showing the bunny decomposed into near-convex parts with distinct colors.
 
 CoACD Parameters (tuneable at top of script)
@@ -34,11 +35,14 @@ CoACD Parameters (tuneable at top of script)
 - ``OUTPUT_PNG``:  Path of the output PNG file.
 """
 
+import matplotlib
+matplotlib.use('Agg')  # non-interactive backend — no display server needed
+
 import numpy as np
 import trimesh
 import coacd
-import pyvista as pv
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # ── tuneable parameters ──────────────────────────────────────────────────────
 MESH_PATH  = "meshes/bunny.obj"
@@ -64,7 +68,7 @@ def decompose(mesh: trimesh.Trimesh, threshold: float, resolution: int, max_hull
     parts = coacd.run_coacd(
         coacd_mesh,
         threshold=threshold,
-        # resolution=resolution,
+        resolution=resolution,
         max_convex_hull=max_hulls,
     )
     print(f"Decomposed into {len(parts)} near-convex parts")
@@ -74,12 +78,39 @@ def decompose(mesh: trimesh.Trimesh, threshold: float, resolution: int, max_hull
     return meshes
 
 
-def build_pyvista_polydata(tm: trimesh.Trimesh) -> pv.PolyData:
-    """Convert a trimesh.Trimesh to a pv.PolyData surface mesh."""
-    faces_vtk = np.hstack(
-        [np.full((len(tm.faces), 1), 3, dtype=np.int_), tm.faces]
+def render_to_png(parts, colours, threshold: float, resolution: int, output_path: str):
+    """Render the decomposed parts with distinct colors and save as PNG."""
+    fig = plt.figure(figsize=(9, 7))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_facecolor('white')
+    fig.patch.set_facecolor('white')
+
+    for part, colour in zip(parts, colours):
+        r, g, b = colour[0] / 255.0, colour[1] / 255.0, colour[2] / 255.0
+        tri_verts = part.vertices[part.faces]  # (n_faces, 3, 3)
+        poly = Poly3DCollection(tri_verts, shade=True,
+                                facecolors=[(r, g, b)] * len(tri_verts))
+        poly.set_edgecolor('none')
+        ax.add_collection3d(poly)
+
+    all_verts = np.vstack([p.vertices for p in parts])
+    ax.set_xlim(all_verts[:, 0].min(), all_verts[:, 0].max())
+    ax.set_ylim(all_verts[:, 1].min(), all_verts[:, 1].max())
+    ax.set_zlim(all_verts[:, 2].min(), all_verts[:, 2].max())
+    ax.set_box_aspect(
+        [np.ptp(all_verts[:, i]) for i in range(3)]
     )
-    return pv.PolyData(np.asarray(tm.vertices, dtype=float), faces_vtk)
+
+    ax.set_title(
+        f"Stanford Bunny – {len(parts)} near-convex parts\n"
+        f"(CoACD, threshold={threshold}, resolution={resolution})",
+        fontsize=11,
+    )
+    ax.set_axis_off()
+
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    print(f"Saved {output_path}")
 
 
 def assign_colors(n: int):
@@ -99,33 +130,9 @@ def main():
     # 2. Near-convex decomposition
     parts = decompose(mesh, threshold=THRESHOLD, resolution=RESOLUTION, max_hulls=MAX_HULLS)
 
-    # 3. Build coloured PyVista actors and save to PNG (off-screen)
+    # 3. Render with distinct colors and save to PNG
     colours = assign_colors(len(parts))
-    pv.start_xvfb()
-    plotter = pv.Plotter(off_screen=True, window_size=(900, 700))
-    plotter.set_background("white")
-
-    for part, colour in zip(parts, colours):
-        poly = build_pyvista_polydata(part)
-        hex_colour = "#{:02x}{:02x}{:02x}".format(*colour[:3])
-        plotter.add_mesh(
-            poly,
-            color=hex_colour,
-            opacity=1.0,
-            smooth_shading=True,
-            show_edges=False,
-        )
-
-    plotter.add_title(
-        f"Stanford Bunny – {len(parts)} near-convex parts "
-        f"(CoACD, threshold={THRESHOLD}, resolution={RESOLUTION})",
-        font_size=10,
-        color="black",
-    )
-    plotter.camera_position = "xy"
-    plotter.screenshot(OUTPUT_PNG)
-    plotter.close()
-    print(f"Saved {OUTPUT_PNG}")
+    render_to_png(parts, colours, THRESHOLD, RESOLUTION, OUTPUT_PNG)
 
 
 if __name__ == "__main__":

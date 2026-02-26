@@ -1,6 +1,5 @@
 numpy>=1.0,<2.0
 tetgen
-pyvista
 trimesh
 coacd
 matplotlib

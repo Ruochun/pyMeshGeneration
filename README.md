@@ -32,19 +32,20 @@ pip install -r requirements.txt
 
 ### Example: Near-Convex Decomposition of the Stanford Bunny
 
-The `bunny_convex_decomposition.py` script loads `meshes/bunny.obj`, splits the
+The `convex_decomposition.py` script loads `meshes/bunny.obj`, splits the
 mesh into near-convex regions with **CoACD**, assigns each region a distinct
-colour, and saves the result as `bunny_decomposition.png`:
+colour, and saves the result as `decomposition.png` using matplotlib (no
+display server or PyVista required):
 
 ```python
-python bunny_convex_decomposition.py
+python convex_decomposition.py
 ```
 
 This script:
 1. Loads `meshes/bunny.obj` with *trimesh*
 2. Runs CoACD near-convex decomposition (default concavity threshold `0.2`)
 3. Assigns each part a visually distinct colour from a matplotlib colourmap
-4. Saves the coloured decomposition to `bunny_decomposition.png` via PyVista
+4. Saves the coloured decomposition to `decomposition.png` via matplotlib Agg
 
 Tuneable parameters at the top of the script:
 - `THRESHOLD`  – CoACD concavity threshold (0, 1); lower → more parts, higher →
@@ -52,7 +53,7 @@ Tuneable parameters at the top of the script:
 - `RESOLUTION` – voxelization resolution used by CoACD; higher → more accurate
   decomposition at the cost of longer compute time (default `2000`)
 - `MAX_HULLS`  – upper bound on the number of convex parts (-1 = unlimited)
-- `OUTPUT_PNG` – path of the output PNG file (default `bunny_decomposition.png`)
+- `OUTPUT_PNG` – path of the output PNG file (default `decomposition.png`)
 
 ### Example: Generate a Beam Mesh
 
