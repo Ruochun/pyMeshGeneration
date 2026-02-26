@@ -85,21 +85,24 @@ def render_to_png(parts, colours, threshold: float, resolution: int, output_path
     ax.set_facecolor('white')
     fig.patch.set_facecolor('white')
 
+    # The bunny mesh uses Y-up; swap Y and Z so the bunny stands upright in
+    # matplotlib's Z-up coordinate system.
     for part, colour in zip(parts, colours):
         r, g, b = colour[0] / 255.0, colour[1] / 255.0, colour[2] / 255.0
-        tri_verts = part.vertices[part.faces]  # (n_faces, 3, 3)
+        tri_verts = part.vertices[part.faces][:, :, [0, 2, 1]]  # swap Y↔Z
         poly = Poly3DCollection(tri_verts, shade=True,
                                 facecolors=[(r, g, b)] * len(tri_verts))
         poly.set_edgecolor('none')
         ax.add_collection3d(poly)
 
-    all_verts = np.vstack([p.vertices for p in parts])
+    all_verts = np.vstack([p.vertices for p in parts])[:, [0, 2, 1]]
     ax.set_xlim(all_verts[:, 0].min(), all_verts[:, 0].max())
     ax.set_ylim(all_verts[:, 1].min(), all_verts[:, 1].max())
     ax.set_zlim(all_verts[:, 2].min(), all_verts[:, 2].max())
     ax.set_box_aspect(
         [np.ptp(all_verts[:, i]) for i in range(3)]
     )
+    ax.view_init(elev=15, azim=-60)  # side view with slight elevation
 
     ax.set_title(
         f"Stanford Bunny – {len(parts)} near-convex parts\n"
