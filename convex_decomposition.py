@@ -16,7 +16,7 @@ Usage
 -----
 Run from the repository root::
 
-    python bunny_convex_decomposition.py
+    python convex_decomposition.py
 
 The script will save ``bunny_decomposition.png`` in the current directory,
 showing the bunny decomposed into near-convex parts with distinct colors.
@@ -45,7 +45,7 @@ MESH_PATH  = "meshes/bunny.obj"
 THRESHOLD  = 0.2     # CoACD concavity threshold (0 < threshold < 1)
 RESOLUTION = 2000    # CoACD voxelization resolution (higher = more accurate)
 MAX_HULLS  = -1      # max number of convex parts (-1 = unlimited)
-OUTPUT_PNG = "bunny_decomposition.png"
+OUTPUT_PNG = "decomposition.png"
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -64,7 +64,7 @@ def decompose(mesh: trimesh.Trimesh, threshold: float, resolution: int, max_hull
     parts = coacd.run_coacd(
         coacd_mesh,
         threshold=threshold,
-        resolution=resolution,
+        # resolution=resolution,
         max_convex_hull=max_hulls,
     )
     print(f"Decomposed into {len(parts)} near-convex parts")
