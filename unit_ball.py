@@ -8,9 +8,9 @@ import pyvista as pv
 
 RADIUS = 1.0
 CENTER = (0.0, 0.0, 0.0)
-THETA_RESOLUTION = 32  # subdivisions around the equator
-PHI_RESOLUTION = 32    # subdivisions from pole to pole
-ELEM_ORDER = 2         # 1 for linear tet4, 2 for quadratic tet10
+THETA_RESOLUTION = 16  # subdivisions around the equator
+PHI_RESOLUTION = 16    # subdivisions from pole to pole
+ELEM_ORDER = 1         # 1 for linear tet4, 2 for quadratic tet10
 OUTPUT_FILE = "unit_ball.vtu"
 
 # ----------------------------------------
