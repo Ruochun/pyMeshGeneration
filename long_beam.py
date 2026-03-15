@@ -50,7 +50,7 @@ tg = tetgen.TetGen(points, faces)
 #       `order`), causing TetGen to ignore the requested element order.
 #       Use fixedvolume=True and maxvolume=<vol> instead.
 elem_order = 2        # 1 for linear, 2 for quadratic
-max_element_volume = 0.1  # maximum tetrahedron volume (cubic units)
+max_element_volume = 0.01  # maximum tetrahedron volume (cubic units)
 
 mesh_res = tg.tetrahedralize(
     order=elem_order,
