@@ -38,12 +38,27 @@ faces = np.array([
 
 tg = tetgen.TetGen(points, faces)
 
-# Options:
-#   pq1.2 -> quality mesh
-#   a0.05 -> max tetra volume
-#   A     -> assign region attributes
-elem_order = 2  # 1 for linear, 2 for quadratic
-mesh_res = tg.tetrahedralize(order=elem_order, mindihedral=20, minratio=1.5)
+# Configuration:
+#   elem_order       - 1 for linear tet4, 2 for quadratic tet10
+#   max_element_volume - maximum volume of each tetrahedron (controls mesh
+#                        resolution); set to a positive value to refine the
+#                        mesh (smaller = finer), or -1.0 to disable the
+#                        constraint and let TetGen decide.
+#
+# NOTE: Do NOT use switches="a<vol>" to control resolution because passing
+#       a raw switches string overrides all keyword arguments (including
+#       `order`), causing TetGen to ignore the requested element order.
+#       Use fixedvolume=True and maxvolume=<vol> instead.
+elem_order = 2        # 1 for linear, 2 for quadratic
+max_element_volume = 0.1  # maximum tetrahedron volume (cubic units)
+
+mesh_res = tg.tetrahedralize(
+    order=elem_order,
+    mindihedral=20,
+    minratio=1.5,
+    fixedvolume=True,
+    maxvolume=max_element_volume,
+)
 # print(f"mesh_res is {mesh_res}")
 
 # nodes, elements
