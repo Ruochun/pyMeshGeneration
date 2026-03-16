@@ -209,3 +209,5 @@ __marimo__/
 # Meshes
 *.vtu
 *.VTU
+*.obj
+*.png
